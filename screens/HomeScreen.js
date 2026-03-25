@@ -1,27 +1,82 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
-import { StyleSheet, Text, View, ScrollView, Switch, TextInput } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Switch,
+  TextInput,
+} from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import ProductCard from "../components/ProductCard";
+
+const categoryNames = {
+  "69b07c5693fd9c8efd4d27ad": "Pricey",
+  "69b07c3248da55468bc6cbd7": "Cheap",
+  "69b06d2006c2316f4127b9e7": "Women",
+  "69b06d0b3d72993a1eee5ca5": "Men",
+  "699efb614c2d07032ff5d8ca": "Horloge",
+};
 
 const HomeScreen = ({ navigation }) => {
   const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled(!isEnabled);
+  const [products, setProducts] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchText, setSearchText] = useState("");
+
+  const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
+
+  useEffect(() => {
+    fetch("https://api.webflow.com/v2/sites/698c7fb6617f4f3ef60b3b32/products", {
+      headers: {
+        Authorization: "Bearer 1ba53b5e81bcef7c47c0bfe994bcbf804966a2ed13c63b1c084ef72c0b907e7d",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const formattedProducts = data.items.map((item) => ({
+          id: item.product.id,
+          title: item.product.fieldData.name,
+          description: item.product.fieldData.description,
+          price: item.product.fieldData.price,
+          image: item.product.fieldData["main-image"]?.url,
+          category:
+            categoryNames[item.product.fieldData.category?.[0]] || "Unknown",
+        }));
+
+        setProducts(formattedProducts);
+      })
+      .catch((error) => {
+        console.error("Fout bij ophalen producten:", error);
+      });
+  }, []);
+
+  const filteredProducts = products.filter((product) => {
+    const matchesCategory =
+      selectedCategory === "" || product.category === selectedCategory;
+
+    const matchesSearch = product.title
+      .toLowerCase()
+      .includes(searchText.toLowerCase());
+
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Home</Text>
-      <TextInput placeholder="Search a product..." style={styles.input} />
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          marginVertical: 12,
-          justifyContent: "space-between",
-        }}
-      >
-        <Text style={{ color: "#fff", marginLeft: 8 }}>
-          Only show promotions
-        </Text>
+
+      <TextInput
+        placeholder="Search a product..."
+        placeholderTextColor="#737373"
+        style={styles.input}
+        value={searchText}
+        onChangeText={setSearchText}
+      />
+
+      <View style={styles.switchRow}>
+        <Text style={styles.switchText}>Only show promotions</Text>
         <Switch
           style={styles.switch}
           trackColor={{ false: "#767577", true: "#81b0ff" }}
@@ -31,78 +86,33 @@ const HomeScreen = ({ navigation }) => {
           value={isEnabled}
         />
       </View>
-      <ScrollView style={styles.container} contentContainerStyle={styles.list}>
-        <ProductCard
-          image={require("../images/BGWatch.jpg")}
-          name="Batman Skateboard"
-          description="Skateboard met batman logo"
-          price={29.99}
-          onPress={() =>
-            navigation.navigate("Details", {
-              image: require("../images/BGWatch.jpg"),
-              title: "Batman Skateboard",
-              description: "Skateboard met batman logo",
-              price: "29.99",
-            })
-          }
-        />
-        <ProductCard
-          image={require("../images/BGWatch.jpg")}
-          name="Superman Skateboard"
-          description="Skateboard met superman logo"
-          price={34.99}
-          onPress={() =>
-            navigation.navigate("Details", {
-              image: require("../images/BGWatch.jpg"),
-              name: "Superman Skateboard",
-              description: "Skateboard met superman logo",
-              price: "34.99",
-            })
-          }
-        />
-        <ProductCard
-          image={require("../images/BGWatch.jpg")}
-          name="Wonder Woman Skateboard"
-          description="Skateboard met wonder woman logo"
-          price={39.99}
-          onPress={() =>
-            navigation.navigate("Details", {
-              image: require("../images/BGWatch.jpg"),
-              name: "Wonder Woman Skateboard",
-              description: "Skateboard met wonder woman logo",
-              price: "39.99",
-            })
-          }
-        />
-        <ProductCard
-          image={require("../images/BGWatch.jpg")}
-          name="Flash Skateboard"
-          description="Skateboard met flash logo"
-          price={27.99}
-          onPress={() =>
-            navigation.navigate("Details", {
-              image: require("../images/BGWatch.jpg"),
-              name: "Flash Skateboard",
-              description: "Skateboard met flash logo",
-              price: "27.99",
-            })
-          }
-        />
-        <ProductCard
-          image={require("../images/BGWatch.jpg")}
-          name="Green Lantern Skateboard"
-          description="Skateboard met green lantern logo"
-          price={31.99}
-          onPress={() =>
-            navigation.navigate("Details", {
-              image: require("../images/BGWatch.jpg"),
-              name: "Green Lantern Skateboard",
-              description: "Skateboard met green lantern logo",
-              price: "31.99",
-            })
-          }
-        />
+
+      <Picker
+        selectedValue={selectedCategory}
+        onValueChange={(itemValue) => setSelectedCategory(itemValue)}
+        style={styles.picker}
+      >
+        <Picker.Item label="All Categories" value="" />
+        <Picker.Item label="Pricey" value="Pricey" />
+        <Picker.Item label="Cheap" value="Cheap" />
+        <Picker.Item label="Women" value="Women" />
+        <Picker.Item label="Men" value="Men" />
+        <Picker.Item label="Horloge" value="Horloge" />
+      </Picker>
+
+      <ScrollView contentContainerStyle={styles.list}>
+        {filteredProducts.map((product) => (
+          <ProductCard
+            key={product.id}
+            name={product.title}
+            description={product.description}
+            price={product.price}
+            image={{ uri: product.image }}
+            onPress={() => navigation.navigate("Details", product)}
+          />
+        ))}
       </ScrollView>
+
       <StatusBar style="auto" />
     </View>
   );
@@ -121,24 +131,40 @@ const styles = StyleSheet.create({
     marginTop: 64,
     marginBottom: 12,
   },
-  list: {
-    paddingHorizontal: 12,
-    paddingBottom: 24,
+  switchRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    alignItems: "center",
+    marginVertical: 12,
     justifyContent: "space-between",
+    paddingHorizontal: 12,
+  },
+  switchText: {
+    color: "#fff",
+    marginLeft: 8,
   },
   switch: {
     marginVertical: 12,
   },
   input: {
     marginVertical: 12,
+    marginHorizontal: 12,
     backgroundColor: "#fff",
     borderColor: "#555",
     borderWidth: 1,
-    color: "#737373",
+    color: "#000",
     paddingVertical: 10,
     paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  picker: {
+    backgroundColor: "#fff",
+    marginHorizontal: 12,
+    marginBottom: 12,
+    borderRadius: 8,
+  },
+  list: {
+    paddingHorizontal: 12,
+    paddingBottom: 24,
   },
 });
 
