@@ -4,11 +4,10 @@ import {
   StyleSheet,
   Text,
   View,
-  TextInput,
   Image,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
-import ProductCard from "../components/ProductCard";
 
 const ProductDetail = ({ route }) => {
   const { image, title, description, price } = route.params;
@@ -16,21 +15,33 @@ const ProductDetail = ({ route }) => {
   const [quantity, setQuantity] = useState(1);
 
   const increaseQuantity = () => {
-    quantity < 100 ? setQuantity(quantity + 1) : null;
-  };
-  const decreaseQuantity = () => {
-    quantity > 1 ? setQuantity(quantity - 1) : null;
+    if (quantity < 100) {
+      setQuantity(quantity + 1);
+    }
   };
 
+  const decreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
+
+  const totalPrice = ((Number(price) || 0) / 100) * quantity;
+
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>Details</Text>
-      <Image source={image} style={styles.image} />
+
+      <Image source={{ uri: image }} style={styles.image} />
+
       <Text style={styles.productTitle}>{title}</Text>
+
       <Text style={styles.productDescription}>{description}</Text>
+
       <Text style={styles.productPrice}>
-        ${typeof price === "number" ? price.toFixed(2) : price}
+        €{totalPrice.toFixed(2).replace(".", ",")}
       </Text>
+
       <View style={styles.quantityContainer}>
         <TouchableOpacity
           style={styles.quantityButton}
@@ -38,7 +49,9 @@ const ProductDetail = ({ route }) => {
         >
           <Text style={styles.quantityButtonText}>-</Text>
         </TouchableOpacity>
+
         <Text style={styles.quantityText}>{quantity}</Text>
+
         <TouchableOpacity
           style={styles.quantityButton}
           onPress={increaseQuantity}
@@ -46,28 +59,30 @@ const ProductDetail = ({ route }) => {
           <Text style={styles.quantityButtonText}>+</Text>
         </TouchableOpacity>
       </View>
+
       <TouchableOpacity
         style={styles.button}
         onPress={() =>
           alert(
-            `You bought ${quantity} skateboard(s) for $ ${(price * quantity).toFixed(2)}`,
+            `You bought ${quantity} item(s) for €${totalPrice
+              .toFixed(2)
+              .replace(".", ",")}`,
           )
         }
       >
         <Text style={styles.buttonText}>Buy Now</Text>
-        <Text style={styles.buttonText}>
-          Total price: $ {(price * quantity).toFixed(2)}
-        </Text>
       </TouchableOpacity>
+
       <StatusBar style="auto" />
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#000",
+    paddingBottom: 30,
   },
   heading: {
     color: "#fff",
@@ -76,13 +91,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 64,
     marginBottom: 12,
-  },
-  list: {
-    paddingHorizontal: 12,
-    paddingBottom: 24,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
   },
   image: {
     width: "100%",

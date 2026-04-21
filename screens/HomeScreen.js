@@ -24,13 +24,15 @@ const HomeScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [searchText, setSearchText] = useState("");
+  const [sortOption, setSortOption] = useState("price-asc");
 
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
   useEffect(() => {
     fetch("https://api.webflow.com/v2/sites/698c7fb6617f4f3ef60b3b32/products", {
       headers: {
-        Authorization: "Bearer 1ba53b5e81bcef7c47c0bfe994bcbf804966a2ed13c63b1c084ef72c0b907e7d",
+        Authorization:
+          "Bearer 1ba53b5e81bcef7c47c0bfe994bcbf804966a2ed13c63b1c084ef72c0b907e7d",
       },
     })
       .then((response) => response.json())
@@ -39,8 +41,8 @@ const HomeScreen = ({ navigation }) => {
           id: item.product.id,
           title: item.product.fieldData.name,
           description: item.product.fieldData.description,
-          price: item.product.fieldData.price,
-          image: item.product.fieldData["main-image"]?.url,
+          image: item.skus?.[0]?.fieldData?.["main-image"]?.url,
+          price: item.skus?.[0]?.fieldData?.price?.value,
           category:
             categoryNames[item.product.fieldData.category?.[0]] || "Unknown",
         }));
@@ -61,6 +63,14 @@ const HomeScreen = ({ navigation }) => {
       .includes(searchText.toLowerCase());
 
     return matchesCategory && matchesSearch;
+  });
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortOption === "price-asc") return a.price - b.price;
+    if (sortOption === "price-desc") return b.price - a.price;
+    if (sortOption === "name-asc") return a.title.localeCompare(b.title);
+    if (sortOption === "name-desc") return b.title.localeCompare(a.title);
+    return 0;
   });
 
   return (
@@ -100,14 +110,26 @@ const HomeScreen = ({ navigation }) => {
         <Picker.Item label="Horloge" value="Horloge" />
       </Picker>
 
+      <Picker
+        selectedValue={sortOption}
+        onValueChange={(itemValue) => setSortOption(itemValue)}
+        style={styles.picker}
+      >
+        <Picker.Item label="Sort By" value="price-asc" />
+        <Picker.Item label="Price: Low to High" value="price-asc" />
+        <Picker.Item label="Price: High to Low" value="price-desc" />
+        <Picker.Item label="Name: A to Z" value="name-asc" />
+        <Picker.Item label="Name: Z to A" value="name-desc" />
+      </Picker>
+
       <ScrollView contentContainerStyle={styles.list}>
-        {filteredProducts.map((product) => (
+        {sortedProducts.map((product) => (
           <ProductCard
             key={product.id}
             name={product.title}
             description={product.description}
             price={product.price}
-            image={{ uri: product.image }}
+            image={product.image}
             onPress={() => navigation.navigate("Details", product)}
           />
         ))}

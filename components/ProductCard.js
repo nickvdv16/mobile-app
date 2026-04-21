@@ -1,25 +1,25 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  Button,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 
 const ProductCard = ({ image, name, description, price, onPress }) => {
   return (
     <View style={styles.card}>
-      <Image source={image} style={styles.image} />
+      <Image source={{ uri: image }} style={styles.image} />
+
       <Text style={styles.title}>{name}</Text>
       <Text style={styles.description}>{description}</Text>
-      <Text style={styles.price}>${price.toFixed(2)}</Text>
-      <Button
+
+      <Text style={styles.price}>
+        €{(price / 100).toFixed(2).replace(".", ",")}
+      </Text>
+
+      <TouchableOpacity
         style={styles.button}
-        OnPress={() => alert("Bought")}
-        title="Buy Now"
-      ></Button>
+        onPress={() => alert("Bought")}
+      >
+        <Text style={styles.buttonText}>Buy Now</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.button} onPress={onPress}>
         <Text style={styles.buttonText}>View Details</Text>
       </TouchableOpacity>
@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 150,
     borderRadius: 10,
+    resizeMode: "cover",
   },
   title: {
     fontSize: 18,
@@ -60,12 +61,10 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 12,
     backgroundColor: "#ff0000",
-    color: "#fff",
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: "center",
   },
-
   buttonText: {
     color: "#fff",
     fontWeight: "700",

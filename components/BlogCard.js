@@ -4,20 +4,13 @@ import {
   Text,
   Image,
   StyleSheet,
-  Button,
   TouchableOpacity,
 } from "react-native";
 
-const BlogCard = ({
-  image,
-  name,
-  shortdescription,
-  longdescription,
-  onPress,
-}) => {
+const BlogCard = ({ image, name, shortdescription, onPress }) => {
   return (
     <View style={styles.card}>
-      <Image source={image} style={styles.image} />
+      <Image source={{ uri: image }} style={styles.image} />
       <Text style={styles.title}>{name}</Text>
       <Text style={styles.description}>{shortdescription}</Text>
       <TouchableOpacity style={styles.button} onPress={onPress}>
@@ -39,6 +32,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 150,
     borderRadius: 10,
+    resizeMode: "cover",
   },
   title: {
     fontSize: 18,
@@ -51,21 +45,13 @@ const styles = StyleSheet.create({
     color: "#d0d0d0",
     marginTop: 4,
   },
-  price: {
-    fontSize: 16,
-    color: "#fff",
-    marginTop: 8,
-    fontWeight: "700",
-  },
   button: {
     marginTop: 12,
     backgroundColor: "#ff0000",
-    color: "#fff",
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: "center",
   },
-
   buttonText: {
     color: "#fff",
     fontWeight: "700",

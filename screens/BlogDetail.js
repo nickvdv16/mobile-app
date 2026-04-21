@@ -1,34 +1,43 @@
-import React, { useState } from "react";
+import React from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
   Text,
-  View,
-  TextInput,
+  ScrollView,
   Image,
-  TouchableOpacity,
 } from "react-native";
-import ProductCard from "../components/ProductCard";
 
-const ProductDetail = ({ route }) => {
-  const { image, title, shortDesc, longDesc } = route.params;
+const BlogDetail = ({ route }) => {
+  const { image, title, postBody } = route.params;
+
+  const cleanPostBody = postBody
+    ? postBody
+        .replace(/<\/p>/g, "\n\n")
+        .replace(/<br\s*\/?>/g, "\n")
+        .replace(/<[^>]+>/g, "")
+        .replace(/&nbsp;/g, " ")
+    : "";
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>Details</Text>
-      <Image source={image} style={styles.image} />
+
+      <Image source={{ uri: image }} style={styles.image} />
+
       <Text style={styles.productTitle}>{title}</Text>
-      <Text style={styles.productDescription}>{longDesc}</Text>
+
+      <Text style={styles.productDescription}>{cleanPostBody}</Text>
 
       <StatusBar style="auto" />
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#000",
+    paddingBottom: 30,
   },
   heading: {
     color: "#fff",
@@ -38,16 +47,10 @@ const styles = StyleSheet.create({
     marginTop: 64,
     marginBottom: 12,
   },
-  list: {
-    paddingHorizontal: 12,
-    paddingBottom: 24,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
   image: {
     width: "100%",
     height: 300,
+    resizeMode: "cover",
   },
   productTitle: {
     fontSize: 22,
@@ -60,60 +63,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#d0d0d0",
     marginTop: 8,
-    textAlign: "center",
-  },
-  productPrice: {
-    fontSize: 20,
-    color: "#fff",
-    marginTop: 12,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  input: {
-    marginTop: 16,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginHorizontal: 32,
-    fontSize: 16,
-    color: "#737373",
-  },
-  button: {
-    marginTop: 24,
-    backgroundColor: "#ff0000",
-    borderRadius: 10,
-    paddingVertical: 12,
-    marginHorizontal: 32,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  quantityContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 16,
-  },
-  quantityButton: {
-    backgroundColor: "#555",
-    borderRadius: 10,
-    padding: 10,
-    marginHorizontal: 20,
-  },
-  quantityButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  quantityText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
+    textAlign: "left",
+    paddingHorizontal: 16,
+    lineHeight: 24,
   },
 });
 
-export default ProductDetail;
+export default BlogDetail;
